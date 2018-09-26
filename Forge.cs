@@ -8,7 +8,7 @@ public class Forge : MonoBehaviour {
 
     public GameObject selected;
     GameObject canvas;
-    Camera camera;
+    Camera cam;
 
     float xSpd = .05f;
     float ySpd = .05f;
@@ -48,6 +48,8 @@ public class Forge : MonoBehaviour {
 
     public void SpawnObject(GameObject g)
     {
+        canvas.SetActive(false);
+        cm.Revert();
         selected = Instantiate(g, new Vector3(0, 0, 0), Quaternion.Euler(new Vector3(0,0,0)));
         StoreColors(selected);
         foreach (Transform child in selected.transform)
@@ -61,26 +63,30 @@ public class Forge : MonoBehaviour {
         CallColor(selected);
         selected = null;
         SpawnMenu();
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     void Start () {
         canvas = GameObject.Find("Canvas");
-        camera = GameObject.Find("Main Camera").GetComponent<Camera>();
+        cam = GameObject.Find("Main Camera").GetComponent<Camera>();
         cm = this.gameObject.GetComponent<Camera_Manipulator>();
-        SpawnMenu();
+        //SpawnMenu();
 	}
 	
 	
 	void Update () {
         if (selected)
         {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.Locked;
             if(Input.GetKey(KeyCode.LeftShift))
-                selected.transform.Rotate(0, Input.GetAxis("Horizontal") * rotationSpeed, 0);
+                selected.transform.Rotate(0, (Input.GetAxis("Horizontal") + Input.GetAxis("Mouse X")) * rotationSpeed, 0);
             else
-                selected.transform.Translate(Input.GetAxis("Horizontal")* xSpd, 0, Input.GetAxis("Vertical")* ySpd, Space.World);
+                selected.transform.Translate((Input.GetAxis("Horizontal") + Input.GetAxis("Mouse X") - Input.GetAxis("Mouse Y"))  * xSpd, 0, (Input.GetAxis("Vertical") + Input.GetAxis("Mouse Y") + Input.GetAxis("Mouse X")) * ySpd, Space.World);
             if (rotationSnap && Input.GetKeyUp(KeyCode.LeftShift))
                 selected.transform.Rotate(selected.transform.rotation.x % 5, selected.transform.rotation.y % 5, selected.transform.rotation.z % 5);
-            if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
+            if (Input.GetKeyUp(KeyCode.Space) || Input.GetMouseButtonDown(0))
             {
                 Drop();
             }
@@ -89,7 +95,7 @@ public class Forge : MonoBehaviour {
         {
             if (Input.GetMouseButtonDown(0))
             {
-                Ray ray = camera.ScreenPointToRay(Input.mousePosition);
+                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
                 if (Physics.Raycast(ray, out hit) && hit.collider.tag != "NoClick")
                 {
