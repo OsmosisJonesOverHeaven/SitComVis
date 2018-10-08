@@ -7,19 +7,36 @@ public class Forge : MonoBehaviour {
     Camera_Manipulator cm;
 
     public GameObject selected;
+    GameObject tmp;
     GameObject canvas;
     Camera cam;
+    GameObject room_holder;
 
     float xSpd = .05f;
     float ySpd = .05f;
     float rotationSpeed = 1f;
 
     public bool rotationSnap = true;
+    public int snapScale = 5;
 
+    Color mainColor;
     int numColors;
     Color[] c;
+    Color[] stackedColors;
     void StoreColors(GameObject p)
     {
+        if (p.GetComponent<Renderer>())
+        {
+            mainColor = p.GetComponent<Renderer>().material.color;
+            Material[] mats = selected.GetComponent<Renderer>().materials;
+            stackedColors = new Color[mats.Length];
+            int ind = 0;
+            foreach (Material m in mats)
+            {
+                stackedColors[ind] = m.color;
+                ind++;
+            }
+        }
         foreach(Transform child in p.transform)
         {
             numColors++;
@@ -32,12 +49,43 @@ public class Forge : MonoBehaviour {
     }
     void CallColor(GameObject p)
     {
-        for(int i = 0; i < numColors; i++)
+        if (p.GetComponent<Renderer>())
+        {
+            p.GetComponent<Renderer>().material.color = mainColor;
+            Material[] mats = selected.GetComponent<Renderer>().materials;
+            int ind = 0;
+            foreach (Material m in mats)
+            {
+                m.color = stackedColors[ind];
+                ind++;
+            }
+        }
+        for (int i = 0; i < numColors; i++)
         {
             p.transform.GetChild(i).GetComponent<Renderer>().material.color = c[i];
         }
         numColors = 0;
         c = null;
+    }
+
+    void ColorRed()
+    {
+        if (selected.GetComponent<Renderer>())
+        {
+            //for multiple materials on one object
+            Material[] mats = selected.GetComponent<Renderer>().materials;
+            foreach (Material m in mats)
+            {
+                m.color = Color.red;
+            }
+        }
+        //for materials in child objects
+        foreach (Transform child in selected.transform)
+        {
+            child.GetComponent<Renderer>().material.color = Color.red;
+        }
+        if (selected.GetComponent<Renderer>())
+            selected.GetComponent<Renderer>().material.color = Color.red;
     }
 
     void SpawnMenu()
@@ -46,16 +94,20 @@ public class Forge : MonoBehaviour {
         canvas.SetActive(true);
     }
 
+    void RemoveMenu()
+    {
+        cm.Revert();
+        canvas.SetActive(false);
+    }
+
     public void SpawnObject(GameObject g)
     {
         canvas.SetActive(false);
         cm.Revert();
         selected = Instantiate(g, new Vector3(0, 0, 0), Quaternion.Euler(new Vector3(0,0,0)));
+        selected.transform.parent = room_holder.transform;
         StoreColors(selected);
-        foreach (Transform child in selected.transform)
-        {
-            child.GetComponent<Renderer>().material.color = Color.red;
-        }
+        ColorRed();
     }
 
     public void Drop()
@@ -71,6 +123,7 @@ public class Forge : MonoBehaviour {
         canvas = GameObject.Find("Canvas");
         cam = GameObject.Find("Main Camera").GetComponent<Camera>();
         cm = this.gameObject.GetComponent<Camera_Manipulator>();
+        room_holder = GameObject.Find("Room_Holder");
         //SpawnMenu();
 	}
 	
@@ -80,15 +133,29 @@ public class Forge : MonoBehaviour {
         {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.Locked;
-            if(Input.GetKey(KeyCode.LeftShift))
-                selected.transform.Rotate(0, (Input.GetAxis("Horizontal") + Input.GetAxis("Mouse X")) * rotationSpeed, 0);
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                selected.transform.Rotate((Input.GetAxis("Vertical") + Input.GetAxis("Mouse Y") * rotationSpeed), (Input.GetAxis("Horizontal") + Input.GetAxis("Mouse X")) * rotationSpeed, 0, Space.World);
+                if (Input.GetKey(KeyCode.Q))
+                    selected.transform.Rotate(0, 0, rotationSpeed * 50 * Time.deltaTime);
+                else if (Input.GetKey(KeyCode.E))
+                    selected.transform.Rotate(0, 0, rotationSpeed * -50 * Time.deltaTime);
+            }
+            else if (Input.GetKey(KeyCode.LeftControl))
+                selected.transform.Translate(0, (Input.GetAxis("Vertical") + Input.GetAxis("Mouse Y") * ySpd / 2), 0, Space.World);
             else
-                selected.transform.Translate((Input.GetAxis("Horizontal") + Input.GetAxis("Mouse X") - Input.GetAxis("Mouse Y"))  * xSpd, 0, (Input.GetAxis("Vertical") + Input.GetAxis("Mouse Y") + Input.GetAxis("Mouse X")) * ySpd, Space.World);
+                selected.transform.Translate((Input.GetAxis("Horizontal") + Input.GetAxis("Mouse X") - Input.GetAxis("Mouse Y")) * xSpd, 0, (Input.GetAxis("Vertical") + Input.GetAxis("Mouse Y") + Input.GetAxis("Mouse X")) * ySpd, Space.World);
             if (rotationSnap && Input.GetKeyUp(KeyCode.LeftShift))
-                selected.transform.Rotate(selected.transform.rotation.x % 5, selected.transform.rotation.y % 5, selected.transform.rotation.z % 5);
+                selected.transform.Rotate(selected.transform.rotation.x % snapScale, selected.transform.rotation.y % snapScale, selected.transform.rotation.z % snapScale, Space.World);
             if (Input.GetKeyUp(KeyCode.Space) || Input.GetMouseButtonDown(0))
             {
                 Drop();
+            }
+            if (Input.GetKeyDown(KeyCode.Backspace))
+            {
+                tmp = selected;
+                Drop();
+                Destroy(tmp);
             }
         }
         else
@@ -101,10 +168,8 @@ public class Forge : MonoBehaviour {
                 {
                     selected = hit.collider.gameObject;
                     StoreColors(selected);
-                    foreach (Transform child in selected.transform)
-                    {
-                        child.GetComponent<Renderer>().material.color = Color.red;
-                    }
+                    ColorRed();
+                    RemoveMenu();
                 }
                 
             }

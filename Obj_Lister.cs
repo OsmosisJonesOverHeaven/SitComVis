@@ -12,7 +12,7 @@ public class Obj_Lister : MonoBehaviour {
     GameObject canvas;
 
     GameObject tmp;
-    int posX, posY;
+    float posX, posY;
     public bool canScrollUp = true;
     public bool canScrollDown = true;
     List<GameObject> buttons;
@@ -27,6 +27,12 @@ public class Obj_Lister : MonoBehaviour {
         GenerateList("");
     }
 
+    /*take height of screen
+     * divide by number of parts
+     * set button height to that division
+     * move down by height
+     */
+
     void GenerateList(string search)
     {
         ClearButtons();
@@ -35,14 +41,17 @@ public class Obj_Lister : MonoBehaviour {
         {
             if (search == "" || i.name.Contains(search))
             {
-                tmp = Instantiate(button);
+                tmp = Instantiate(button, canvas.transform.GetChild(1), false);
+                tmp.SetActive(true);
                 tmp.transform.SetParent(canvas.transform);
-                tmp.transform.position = new Vector3(Screen.width / 2 + 100, posY, 0);
+                //tmp.transform.position = new Vector3(Screen.width / 2, posY, 0);
+                tmp.transform.position = new Vector3(tmp.transform.position.x, posY, 0);
                 tmp.GetComponent<Button>().onClick.AddListener(delegate { cont.SpawnObject(i); });
                 tmp.transform.GetChild(0).GetComponent<Text>().text = i.name;
                 tmp.GetComponent<Button_Controls>().ol = this;
 
-                posY -= 30;
+                //posY -= 30;
+                posY -= tmp.GetComponent<RectTransform>().sizeDelta.y * canvas.GetComponent<Canvas>().scaleFactor;
                 buttons.Add(tmp);
             }
         }
