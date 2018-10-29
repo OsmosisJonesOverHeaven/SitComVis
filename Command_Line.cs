@@ -9,10 +9,15 @@ public class Command_Line : MonoBehaviour {
     public GameObject textBox;
     public GameObject controller;
 
+    string[] textHistory = new string[5];
+    string redoStorage;
+
     //string[] cmds = { "/save", "/load", "/color", "/move" };
 
 	void Start () {
-		
+        if (textHistory[0] == null)
+            textHistory[0] = "";
+        redoStorage = "";
 	}
 	
 
@@ -40,6 +45,29 @@ public class Command_Line : MonoBehaviour {
 
             }
         }
+    }
+
+    void ShiftHistory(int dir)
+    {
+        if (dir > 0)
+        {
+            string[] tmp = { textHistory[1], textHistory[2], textHistory[3], textHistory[4], null };
+            redoStorage = textHistory[0];
+            textHistory = tmp;
+        }
+        else
+        {
+            if (redoStorage != "")
+            {
+                string[] tmp = {redoStorage, textHistory[1], textHistory[2], textHistory[3], textHistory[4] };
+                textHistory = tmp;
+            }
+        }
+    }
+
+    public void AddtoScript(string line)
+    {
+
     }
 
 }
