@@ -10,6 +10,7 @@ public class Obj_Lister : MonoBehaviour {
     GameObject searchBox;
     Forge cont;
     GameObject canvas;
+    public GameObject location;
 
     GameObject tmp;
     float posX, posY;
@@ -36,16 +37,17 @@ public class Obj_Lister : MonoBehaviour {
     void GenerateList(string search)
     {
         ClearButtons();
-        posY = Screen.height - 30;
+        //posY = Screen.height - 30;
+        posY = location.transform.position.y;
         foreach(GameObject i in parts)
         {
             if (search == "" || i.name.Contains(search))
             {
-                tmp = Instantiate(button, canvas.transform.GetChild(1), false);
+                tmp = Instantiate(button, location.transform, false);
                 tmp.SetActive(true);
-                tmp.transform.SetParent(canvas.transform);
+                tmp.transform.SetParent(location.transform);
                 //tmp.transform.position = new Vector3(Screen.width / 2, posY, 0);
-                tmp.transform.position = new Vector3(tmp.transform.position.x, posY, 0);
+                tmp.transform.position = new Vector3(location.transform.position.x, posY, 0);
                 tmp.GetComponent<Button>().onClick.AddListener(delegate { cont.SpawnObject(i); });
                 tmp.transform.GetChild(0).GetComponent<Text>().text = i.name;
                 tmp.GetComponent<Button_Controls>().ol = this;

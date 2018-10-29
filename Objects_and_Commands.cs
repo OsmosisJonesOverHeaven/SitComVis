@@ -7,12 +7,12 @@ public class Objects_and_Commands : MonoBehaviour {
 
     public bool Objects; //if false, defaults to command block	
     GameObject room_holder;
-    GameObject controller;
+    //GameObject controller;
 
     private void Start()
     {
         room_holder = GameObject.Find("Room_Holder");
-        controller = GameObject.Find("Controller");
+        //controller = GameObject.Find("Controller");
     }
 
     //obj
@@ -41,8 +41,8 @@ public class Objects_and_Commands : MonoBehaviour {
         foreach(Transform child in room_holder.transform)
         {
             id += 1;
-            child.name = child.name.Replace("(Clone)", "_" + id);
-            tmp += child.name.Replace("(Clone)", "_" + id) + ", "; //when they get stored to lists, have a number associated and add that number
+            child.name = child.name.Replace("(Clone)", "|" + id);
+            tmp += child.name.Replace("(Clone)", "|" + id) + ", "; //when they get stored to lists, have a number associated and add that number
         }
         tmp = tmp.Substring(0, tmp.Length - 2);
         transform.GetChild(0).GetComponent<Text>().text = tmp;

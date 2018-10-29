@@ -6,6 +6,7 @@ public class Forge : MonoBehaviour {
 
     Camera_Manipulator cm;
 
+    public GameObject point;
     public GameObject selected;
     GameObject tmp;
     GameObject canvas;
@@ -102,9 +103,13 @@ public class Forge : MonoBehaviour {
 
     public void SpawnObject(GameObject g)
     {
+        Vector3 location = new Vector3(0, 0, 0);
+        Quaternion rotation = g.transform.rotation;
+        if (point)
+            location = point.transform.position;
         canvas.SetActive(false);
         cm.Revert();
-        selected = Instantiate(g, new Vector3(0, 0, 0), Quaternion.Euler(new Vector3(0,0,0)));
+        selected = Instantiate(g, location, rotation);
         selected.transform.parent = room_holder.transform;
         StoreColors(selected);
         ColorRed();
@@ -121,7 +126,7 @@ public class Forge : MonoBehaviour {
 
     void Start () {
         canvas = GameObject.Find("Canvas");
-        cam = GameObject.Find("Main Camera").GetComponent<Camera>();
+        cam = GameObject.Find("Creator_Camera").GetComponent<Camera>();
         cm = this.gameObject.GetComponent<Camera_Manipulator>();
         room_holder = GameObject.Find("Room_Holder");
         //SpawnMenu();
@@ -173,6 +178,10 @@ public class Forge : MonoBehaviour {
                 }
                 
             }
+        }
+        if (this.GetComponent<Mouse_Pointer>().bPoint)
+        {
+            point = this.GetComponent<Mouse_Pointer>().bPoint;
         }
 	}
 }

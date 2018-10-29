@@ -10,7 +10,7 @@ public class Button_Controls : MonoBehaviour {
     float scroll = 0;
     void Update () {
         scroll = Input.GetAxis("Mouse ScrollWheel") + Input.GetAxis("Vertical");
-        if ((ol.canScrollUp && scroll > 0) || (ol.canScrollDown && scroll < 0))
-            transform.Translate(0, (scroll) * speed, 0);
+        if ((ol.canScrollUp && scroll > 0) || (ol.canScrollDown && scroll < 0)) { }
+            //transform.Translate(0, (scroll) * speed, 0);
 	}
 }

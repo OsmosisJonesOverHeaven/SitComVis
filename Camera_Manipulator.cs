@@ -8,13 +8,13 @@ public class Camera_Manipulator : MonoBehaviour {
 
     void Start()
     {
-        cam = GameObject.Find("Main Camera").GetComponent<Camera>();
+        cam = GameObject.Find("Creator_Camera").GetComponent<Camera>();
         RightMenu();
     }
 
     public void RightMenu()
     {
-        cam.rect = new Rect(-0.5f, 0, 1, 1);
+        cam.rect = new Rect(0, 0, .5f, 1);
     }
     public void LeftMenu()
     {
