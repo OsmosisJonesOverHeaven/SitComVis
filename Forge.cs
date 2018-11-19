@@ -1,13 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class Forge : MonoBehaviour {
 
     Camera_Manipulator cm;
+    Camera_Switcher cs;
 
     public GameObject point;
     public GameObject selected;
+    public GameObject CurrentObj;
     GameObject tmp;
     GameObject canvas;
     Camera cam;
@@ -45,7 +49,8 @@ public class Forge : MonoBehaviour {
         c = new Color[numColors + 1];
         for(int i = 0; i < numColors; i++)
         {
-            c[i] = p.transform.GetChild(i).GetComponent<Renderer>().material.color;
+            if(p.transform.GetChild(i).GetComponent<Renderer>())
+                c[i] = p.transform.GetChild(i).GetComponent<Renderer>().material.color;
         }
     }
     void CallColor(GameObject p)
@@ -63,7 +68,8 @@ public class Forge : MonoBehaviour {
         }
         for (int i = 0; i < numColors; i++)
         {
-            p.transform.GetChild(i).GetComponent<Renderer>().material.color = c[i];
+            if(p.transform.GetChild(i).GetComponent<Renderer>())
+                p.transform.GetChild(i).GetComponent<Renderer>().material.color = c[i];
         }
         numColors = 0;
         c = null;
@@ -83,7 +89,8 @@ public class Forge : MonoBehaviour {
         //for materials in child objects
         foreach (Transform child in selected.transform)
         {
-            child.GetComponent<Renderer>().material.color = Color.red;
+            if(child.GetComponent<Renderer>())
+                child.GetComponent<Renderer>().material.color = Color.red;
         }
         if (selected.GetComponent<Renderer>())
             selected.GetComponent<Renderer>().material.color = Color.red;
@@ -128,6 +135,7 @@ public class Forge : MonoBehaviour {
         canvas = GameObject.Find("Canvas");
         cam = GameObject.Find("Creator_Camera").GetComponent<Camera>();
         cm = this.gameObject.GetComponent<Camera_Manipulator>();
+        cs = this.gameObject.GetComponent<Camera_Switcher>();
         room_holder = GameObject.Find("Room_Holder");
         //SpawnMenu();
 	}
@@ -165,10 +173,13 @@ public class Forge : MonoBehaviour {
         }
         else
         {
-            if (Input.GetMouseButtonDown(0))
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit) && !EventSystem.current.IsPointerOverGameObject())
+                CurrentObj.transform.GetChild(0).GetComponent<Text>().text = hit.collider.name;
+            if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
             {
-                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                RaycastHit hit;
+                
                 if (Physics.Raycast(ray, out hit) && hit.collider.tag != "NoClick")
                 {
                     selected = hit.collider.gameObject;

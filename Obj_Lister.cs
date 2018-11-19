@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class Obj_Lister : MonoBehaviour {
 
@@ -9,6 +10,7 @@ public class Obj_Lister : MonoBehaviour {
     public GameObject button;
     GameObject searchBox;
     Forge cont;
+    Camera_Manipulator camM;
     GameObject canvas;
     public GameObject location;
 
@@ -16,16 +18,22 @@ public class Obj_Lister : MonoBehaviour {
     float posX, posY;
     public bool canScrollUp = true;
     public bool canScrollDown = true;
+    public bool canScroll = true;
     List<GameObject> buttons;
+
+    public bool list;
 
     private void Start()
     {
-        cont = GetComponent<Forge>();
-        canvas = GameObject.Find("Canvas");
-        searchBox = GameObject.Find("searchFilter");
-        tmp = null;
-        buttons = new List<GameObject>();
-        GenerateList("");
+        if (list)
+        {
+            cont = GetComponent<Forge>();
+            canvas = GameObject.Find("Canvas");
+            searchBox = GameObject.Find("searchFilter");
+            tmp = null;
+            buttons = new List<GameObject>();
+            GenerateList("");
+        }
     }
 
     /*take height of screen
@@ -51,8 +59,6 @@ public class Obj_Lister : MonoBehaviour {
                 tmp.GetComponent<Button>().onClick.AddListener(delegate { cont.SpawnObject(i); });
                 tmp.transform.GetChild(0).GetComponent<Text>().text = i.name;
                 tmp.GetComponent<Button_Controls>().ol = this;
-
-                //posY -= 30;
                 posY -= tmp.GetComponent<RectTransform>().sizeDelta.y * canvas.GetComponent<Canvas>().scaleFactor;
                 buttons.Add(tmp);
             }
@@ -88,6 +94,16 @@ public class Obj_Lister : MonoBehaviour {
                 canScrollDown = true;
                 canScrollUp = true;
             }
+        }
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            canScroll = true;
+        }
+        else
+        {
+            canScroll = false;
+            canScrollDown = false;
+            canScrollUp = false;
         }
     }
 

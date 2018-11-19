@@ -7,11 +7,13 @@ public class Objects_and_Commands : MonoBehaviour {
 
     public bool Objects; //if false, defaults to command block	
     GameObject room_holder;
+    Camera_Switcher cs;
     //GameObject controller;
 
     private void Start()
     {
         room_holder = GameObject.Find("Room_Holder");
+        cs = this.gameObject.GetComponent<Camera_Switcher>();
         //controller = GameObject.Find("Controller");
     }
 
@@ -37,12 +39,23 @@ public class Objects_and_Commands : MonoBehaviour {
     public void UpdateList()
     {
         string tmp = "";
-        id = 0;
         foreach(Transform child in room_holder.transform)
         {
             id += 1;
-            child.name = child.name.Replace("(Clone)", "|" + id);
-            tmp += child.name.Replace("(Clone)", "|" + id) + ", "; //when they get stored to lists, have a number associated and add that number
+            if (!child.name.Contains("|")) {
+                Debug.Log("AddID?");
+                child.name = child.name.Insert(child.name.Length, "|" + id);
+                child.name = child.name.Replace("(Clone)", "");
+            }
+            if (child.name.Contains("Camera"))
+            {
+                Debug.Log("Eureka!");
+                cs.SaveCamPos(child);
+            }
+            //Debug.Log("ID: " + id + " Child Name: " + child.name);
+            //Debug.Log("Spawned: " + child.name); 
+            tmp += child.name + ", "; //when they get stored to lists, have a number associated and add that number
+            //Debug.Log(tmp);
         }
         tmp = tmp.Substring(0, tmp.Length - 2);
         transform.GetChild(0).GetComponent<Text>().text = tmp;

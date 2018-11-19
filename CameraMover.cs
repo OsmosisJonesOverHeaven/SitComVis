@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class CameraMover : MonoBehaviour {
 
@@ -9,7 +10,7 @@ public class CameraMover : MonoBehaviour {
     float zoomSpeed = 5.0f;
 
 	void Update () {
-        if (!this.GetComponent<Forge>().selected)
+        if (!this.GetComponent<Forge>().selected && !EventSystem.current.IsPointerOverGameObject())
         {
             cam.transform.Translate(Input.GetAxis("Horizontal") * speed * Time.deltaTime, 0, 0);
             if (Input.GetKey(KeyCode.LeftShift))

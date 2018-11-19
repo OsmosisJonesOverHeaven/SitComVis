@@ -7,13 +7,11 @@ public class Page_Changer : MonoBehaviour {
 
     GameObject page1;
     GameObject page2;
-    Text text;
 
     private void Start()
     {
         page1 = this.transform.GetChild(0).gameObject;
         page2 = this.transform.GetChild(1).gameObject;
-        text = this.GetComponent<Text>();
     }
 
     int page = 1;
