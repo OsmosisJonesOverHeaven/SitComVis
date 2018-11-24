@@ -1,0 +1,43 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class RandomScene : MonoBehaviour {
+    Forge create;
+    public List<GameObject> parts;
+    GameObject newby;
+    GameObject selected;
+
+	// Use this for initialization
+	void Start () {
+        create = GetComponent<Forge>();
+	}
+
+    void Generate()
+    {
+        int random = Random.Range(0, 11);
+        newby = SpawnObject(parts[random]);
+    }
+
+    public GameObject SpawnObject(GameObject g)
+    {
+        float X = Random.Range(-5, 5);
+        float Y = Random.Range(0, 2);
+        float Z = Random.Range(-5, 5);
+        Vector3 location = new Vector3(X, Y, Z);
+        Quaternion rotation = g.transform.rotation;
+        selected = Instantiate(g, location, rotation);
+        selected.transform.parent = create.room_holder.transform;
+        create.StoreColors(selected);
+        return selected;
+    }
+
+    // Update is called once per frame
+    void Update () {
+        if (Input.GetKey("r")) {
+            Generate();
+            //Need a button to do this
+            //On hiatus for now
+        }
+	}
+}
