@@ -12,6 +12,8 @@ public class Camera_Switcher : MonoBehaviour {
     int index = 0;
     public List<Transform> list = new List<Transform>();
 
+
+    //saves the given transform to the list of cameras
     public void SaveCamPos(Transform g)
     {
         if(!list.Contains(g))
@@ -19,6 +21,7 @@ public class Camera_Switcher : MonoBehaviour {
         Debug.Log("Camera Position Saved: " + g.name);
     }
 
+    //changes camera position to the desired transform value
     public void ChangeCamPos(Transform g)
     {
         if (list.Contains(g)){
@@ -41,6 +44,8 @@ public class Camera_Switcher : MonoBehaviour {
         }
     }
 
+    //runs at the start of the program
+    //adds the main camera to the list
     private void Start()
     {
         cCamPos = cam1.transform.position;
@@ -48,18 +53,21 @@ public class Camera_Switcher : MonoBehaviour {
         list.Add(cam1.transform);
     }
 
+    //runs every frame
+    //checks if the index is right
     private void Update()
     {
         if (list.Count == index)
             index = 0;
+        /*Used for debugging
         if (Input.GetKeyDown("m"))
         {
-            //ChangeCamPos(list[index++]);
+            ChangeCamPos(list[index++]);
         }
         if (Input.GetKeyDown("n"))
         {
-            //ChangeCamPos(list[0]);
-        }
+            ChangeCamPos(list[0]);
+        }*/
         if (!isMain) {
             //cam1.transform.Rotate(-Input.GetAxis("Mouse Y"), 0, 0);
         }

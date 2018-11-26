@@ -21,19 +21,16 @@ public class Command_Line : MonoBehaviour {
      * /rotate object (x y z) -
      * changes rotation of an object
      * 
-     * /anim object name (speed/on/off)
-     * animates a character
-     * 
-     * /animMove object (x y z/point)
-     * moves a character over time to a point
+     * /animMove object speed (x y z/point) -
+     * moves a character over speed time to a point or x y z
      * 
      * /delete string -
      * deletes the last row or every occurrance of a command
      * 
-     * /replace
+     * /replace -
      * replaces a line
      * 
-     * /sub x text -
+     * /sub text -
      * displays a subtitle for x seconds
      * 
      * /speed x -
@@ -42,41 +39,51 @@ public class Command_Line : MonoBehaviour {
      * /view x -
      * switches camera to camera x
      * 
-     * /addPos object x y z
+     * /addPos object x y z -
      * adds values to the position
      * 
-     * /pause x
+     * /pause x -
      * pauses for x seconds
+     * 
+     * /load setting -
+     * loads setting
+     * 
+     * /rename object name -
+     * renames object to name
      */
 
     public GameObject history;
     public GameObject bigHistory;
     public GameObject textBox;
     public GameObject controller;
+    public GameObject ObjectList;
 
-    string fullText = "";
-    string redoStorage = "";
+    Animator m_Animator;
+    float animationSpeed;
+
+    public string fullText = "";
+    string redoStorage = ""; //unused
     string setting;
     string lastCommand = "";
 
-	void Start () {
-        
-	}
-	
-
+    //calls every frame
 	void Update () {
         bigHistory.GetComponent<Text>().text = fullText;
         history.GetComponent<Text>().text = fullText;
     }
-
+    //adds to the string fullText, containing the command history
     void AddHistory() {
         fullText += textBox.GetComponent<Text>().text + "\n";
     }
+
+    //finds and replaces "target" in fullText with "replacement"
     void ReplaceHistory(string target, string replacement)
     {
-        fullText.Replace(target, replacement);
+        fullText = fullText.Replace(target, replacement);
     }
 
+    //takes the command string from the text box and figures out what to do with it by splitting it into a string array
+    //clears the text box and decides whether or not to add it to fullText
     public void ParseCommand()
     {
         string cmd = this.GetComponent<InputField>().text;
@@ -94,7 +101,7 @@ public class Command_Line : MonoBehaviour {
             {
                 addError();
             }
-        }
+        } //-
         else if (parsed[0] == "/color")
         {
             try
@@ -122,7 +129,7 @@ public class Command_Line : MonoBehaviour {
             {
                 addError();
             }
-        }
+        } //-
         else if (parsed[0] == "/move")
         {
             try
@@ -130,15 +137,15 @@ public class Command_Line : MonoBehaviour {
                 GameObject tmp = GameObject.Find("Pointer 1(Clone)");
                 GameObject target = GameObject.Find(parsed[1]);
                 float x, y, z;
-                if (parsed[2] == "p")
+                if (parsed[2].Contains("p"))
                     x = tmp.transform.position.x;
                 else
                     x = float.Parse(parsed[2]);
-                if (parsed[3] == "p")
+                if (parsed[3].Contains("p"))
                     y = tmp.transform.position.y;
                 else
                     y = float.Parse(parsed[3]);
-                if (parsed[4] == "p")
+                if (parsed[4].Contains("p"))
                     z = tmp.transform.position.z;
                 else
                     z = float.Parse(parsed[4]);
@@ -146,7 +153,12 @@ public class Command_Line : MonoBehaviour {
                 if (parsed[2] != "point")
                     target.transform.position = new Vector3(x, y, z);
                 else
+                {
                     target.transform.position = tmp.transform.position;
+                    x = tmp.transform.position.x;
+                    y = tmp.transform.position.y;
+                    z = tmp.transform.position.z;
+                }
                 textBox.GetComponent<Text>().text = "/move " + parsed[1] + " " + x + " " + y + " " + z;
                 AddHistory();
             }
@@ -154,7 +166,7 @@ public class Command_Line : MonoBehaviour {
             {
                 addError();
             }
-        }
+        } //-
         else if (parsed[0] == "/addPos")
         {
             try
@@ -167,7 +179,7 @@ public class Command_Line : MonoBehaviour {
             {
                 addError();
             }
-        }
+        } //-
         else if (parsed[0] == "/scale")
         {
             try
@@ -180,7 +192,7 @@ public class Command_Line : MonoBehaviour {
             {
                 addError();
             }
-        }
+        } //-
         else if (parsed[0] == "/rotate")
         {
             try
@@ -193,7 +205,7 @@ public class Command_Line : MonoBehaviour {
             {
                 addError();
             }
-        }
+        } //-
         else if (parsed[0] == "/delete")
         {
             try
@@ -201,81 +213,133 @@ public class Command_Line : MonoBehaviour {
                 string tmp = "";
                 if (parsed.Length > 1)
                 {
-                    
-                    for(int i = 1; i < parsed.Length; i++)
+                    for (int i = 1; i < parsed.Length; i++)
                     {
-                        tmp += parsed[i] + " ";
+                        tmp += parsed[i].TrimEnd('\n') + " ";
                     }
-                    tmp.TrimEnd(' ');
+                    tmp = tmp.TrimEnd(' ');
                 }
                 else
                 {
+                    Debug.Log("Found 2 " + lastCommand);
                     tmp = lastCommand;
                 }
-                ReplaceHistory(tmp, "");
+                ReplaceHistory(tmp, " ");
             }
             catch
             {
                 addError();
             }
-        }
+        } //-
         else if(parsed[0] == "/replace")
-        {/*
+        {
             try
             {
+                string[] tokens;
                 string tmp = "";
+
                 for (int i = 1; i < parsed.Length; i++)
                 {
-                    tmp += parsed[i] + " ";
+                    tmp += parsed[i].TrimEnd('\n') + " ";
                 }
-                tmp.TrimEnd(' ');
-
+                tmp = tmp.TrimEnd(' ');
+                tokens = tmp.Split('*');
+                ReplaceHistory(tokens[0].TrimStart(' ').TrimEnd(' '), tokens[1].TrimStart(' ').TrimEnd(' '));
             }
             catch
             {
                 addError();
-            }*/
-        }
+            }
+        } //-
         else if(parsed[0] == "/animove")
         {
-
+            try
+            {
+                GameObject tmp = GameObject.Find("Pointer 1(Clone)");
+                GameObject target = GameObject.Find(parsed[1]);
+                float x, y, z;
+                if (parsed[3].Contains("p"))
+                    x = tmp.transform.position.x;
+                else
+                    x = float.Parse(parsed[3]);
+                if (parsed[4].Contains("p"))
+                    y = tmp.transform.position.y;
+                else
+                    y = float.Parse(parsed[4]);
+                if (parsed[5].Contains("p"))
+                    z = tmp.transform.position.z;
+                else
+                    z = float.Parse(parsed[5]);
+                Debug.Log(x);
+                if (parsed[3] != "point")
+                    target.transform.position = new Vector3(x, y, z);
+                else
+                {
+                    target.transform.position = tmp.transform.position;
+                    x = tmp.transform.position.x;
+                    y = tmp.transform.position.y;
+                    z = tmp.transform.position.z;
+                }
+                textBox.GetComponent<Text>().text = "/animove " + parsed[1] + " " + parsed[2] + " " + x + " " + y + " " + z;
+                fullText += "/animove " + parsed[1] + " " + parsed[2] + " " + x + " " + y + " " + z;
+                //AddHistory();
+            }
+            catch
+            {
+                addError();
+            }
         }
-        else if(parsed[0] == "/anim")
+        else if (parsed[0] == "/rename")
         {
-
-        }
+            try
+            {
+                GameObject obj = GameObject.Find(parsed[1]);
+                string[] name = obj.name.Split('|');
+                obj.name = name[0] + "|" + parsed[2].TrimEnd('\n');
+                ObjectList.GetComponent<Objects_and_Commands>().UpdateList();
+            }
+            catch
+            {
+                addError();
+            }
+        } //-
+        else if (parsed[0] == "/load")
+        {
+            try
+            {
+                controller.GetComponent<Data_Storage>().ReadSetting("");
+            }
+            catch
+            {
+                Debug.Log("Not a Setting file");
+            }
+        } //-
         else if (parsed[0] == "/sub")
         {
             AddHistory();
-        }
-        else if (parsed[0] == "/speed")
+        } //-
+        else if (parsed[0] == "/speed" || parsed[0] == "/pause")
         {
             if(parsed.Length == 2 && int.Parse(parsed[1]) > 0)
                 AddHistory();
-        }
+        } //-
         else if (parsed[0] == "/view")
         {
             if (parsed.Length == 2)
                 AddHistory();
-        }
+        } //-
         else
         {
             Debug.Log("Not valid input");
         }
 
-
+        lastCommand = textBox.GetComponent<Text>().text;
         this.GetComponent<InputField>().text = "";
     }
 
+    //error handling for debugging purposes
     void addError()
     {
         Debug.Log("Bad Syntax");
     }
-
-
-    //all anims and motion is stored in the text
-    //key removes a line
-    //adds a line to stack
-    //UpdateActions()
-    //move works by lerp over time
 }

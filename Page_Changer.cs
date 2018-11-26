@@ -8,6 +8,7 @@ public class Page_Changer : MonoBehaviour {
     GameObject page1;
     GameObject page2;
 
+    //gets pages and stores them
     private void Start()
     {
         page1 = this.transform.GetChild(0).gameObject;
@@ -16,6 +17,7 @@ public class Page_Changer : MonoBehaviour {
 
     int page = 1;
 
+    //goes up a page
     public void PageUp()
     {
         if (page1.activeSelf)
@@ -33,6 +35,7 @@ public class Page_Changer : MonoBehaviour {
 
     }
 
+    //goes down a page
     public void PageDown()
     {
         if (page1.activeSelf)

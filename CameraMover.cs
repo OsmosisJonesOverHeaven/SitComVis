@@ -9,6 +9,8 @@ public class CameraMover : MonoBehaviour {
     float speed = 10.0f;
     float zoomSpeed = 5.0f;
 
+    //called every frame
+    //moves the view of the scene if the mouse isnt hovering over a UI element
 	void Update () {
         if (!this.GetComponent<Forge>().selected && !EventSystem.current.IsPointerOverGameObject())
         {

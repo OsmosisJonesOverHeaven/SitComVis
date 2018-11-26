@@ -7,7 +7,6 @@ using UnityEngine.EventSystems;
 public class Forge : MonoBehaviour {
 
     Camera_Manipulator cm;
-    Camera_Switcher cs;
 
     public GameObject point;
     public GameObject selected;
@@ -28,6 +27,8 @@ public class Forge : MonoBehaviour {
     int numColors;
     Color[] c;
     Color[] stackedColors;
+    //stores colors of an object p while p is selected by the user
+    //checks if the parent transform has children
     void StoreColors(GameObject p)
     {
         if (p.GetComponent<Renderer>())
@@ -53,6 +54,7 @@ public class Forge : MonoBehaviour {
                 c[i] = p.transform.GetChild(i).GetComponent<Renderer>().material.color;
         }
     }
+    //puts the stored colors back on the selected object
     void CallColor(GameObject p)
     {
         if (p.GetComponent<Renderer>())
@@ -74,7 +76,8 @@ public class Forge : MonoBehaviour {
         numColors = 0;
         c = null;
     }
-
+    //colors an object and all its children red
+    //used for selection
     void ColorRed()
     {
         if (selected.GetComponent<Renderer>())
@@ -96,18 +99,21 @@ public class Forge : MonoBehaviour {
             selected.GetComponent<Renderer>().material.color = Color.red;
     }
 
+    //shows the GUI
     void SpawnMenu()
     {
         cm.RightMenu();
         canvas.SetActive(true);
     }
 
+    //hides the GUI, makes the camera bigger
     void RemoveMenu()
     {
         cm.Revert();
         canvas.SetActive(false);
     }
 
+    //creates an object based off requested prefab g, selects it
     public void SpawnObject(GameObject g)
     {
         Vector3 location = new Vector3(0, 0, 0);
@@ -122,6 +128,7 @@ public class Forge : MonoBehaviour {
         ColorRed();
     }
 
+    //deselects current selected object
     public void Drop()
     {
         CallColor(selected);
@@ -131,16 +138,17 @@ public class Forge : MonoBehaviour {
         Cursor.visible = true;
     }
 
+    //plays at start of program
+    //finds all the objects it needs
     void Start () {
         canvas = GameObject.Find("Canvas");
         cam = GameObject.Find("Creator_Camera").GetComponent<Camera>();
         cm = this.gameObject.GetComponent<Camera_Manipulator>();
-        cs = this.gameObject.GetComponent<Camera_Switcher>();
         room_holder = GameObject.Find("Room_Holder");
-        //SpawnMenu();
 	}
 	
-	
+	//runs every frame
+    //handles selected items and general mouse and keyboard actions
 	void Update () {
         if (selected)
         {

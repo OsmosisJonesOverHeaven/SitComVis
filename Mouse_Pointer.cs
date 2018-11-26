@@ -20,9 +20,9 @@ public class Mouse_Pointer : MonoBehaviour {
 
     GameObject rPoint;
     public GameObject bPoint;
-
-
-
+    
+    //runs every frame
+    //handles placement of bPoint, the blue pointer that is used for saving x y z values
     void Update () {
         if (bPoint && this.GetComponent<Forge>().selected)
             bPoint.SetActive(false);
@@ -47,6 +47,7 @@ public class Mouse_Pointer : MonoBehaviour {
         }
 	}
 
+    //actually creates bPoint at the given location
     public void UpdateBluePoint(float x, float y, float z)
     {
         if (!bPoint)

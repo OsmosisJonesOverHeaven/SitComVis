@@ -14,6 +14,7 @@ public class XYDisplay : MonoBehaviour {
     GameObject storedY;
     GameObject storedZ;
 
+    //gets the display locations for x y z values
     private void Start()
     {
         currentX = this.transform.GetChild(2).GetChild(1).gameObject;
@@ -24,6 +25,7 @@ public class XYDisplay : MonoBehaviour {
         storedZ = this.transform.GetChild(4).GetChild(1).gameObject;
     }
 
+    //updates the x y z displays
     private void Update()
     {
         currentX.GetComponent<Text>().text = controller.GetComponent<Mouse_Pointer>().mouseX + "";

@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 using System.IO;
 using UnityEngine.UI;
 
@@ -10,50 +9,102 @@ public class PlayScript : MonoBehaviour {
     public float speed = 1;
     public float timeElapsed = 0;
     public bool play = false;
+    bool coroutineRunning = false;
+    bool ended = false;
     int index = 0;
-    float fullTime = 0;
 
     string[] script;
-    //IEnumerator coroutine;
+    string scriptPath;
 
+    public GameObject input;
+    public GameObject timeElapsedDisplay;
     public GameObject subtitle;
+    public GameObject camera;
+    Vector3 cameraPosition;
+    Vector3 cameraRotation;
 
+    //called at start
+    //gets camera position and rotation
 	void Start () {
-        //coroutine = ParseCommand();
+        cameraPosition = camera.transform.position;
+        cameraRotation = camera.transform.rotation.eulerAngles;
 	}
 	
-	
+	//decides whether to update the elapsed time every frame
 	void Update () {
-        if (play)
-        {
+        if (play || coroutineRunning)
             timeElapsed += Time.deltaTime;
-            fullTime += Time.deltaTime;
-        }
+        UpdateTime(timeElapsed);
 	}
 
+    //actually updates the elapsed time and changes its color
+    void UpdateTime(float t)
+    {
+        if (play || (ended && coroutineRunning))
+            timeElapsedDisplay.GetComponent<Text>().color = Color.gray;
+        else if((ended || !play) && !coroutineRunning)
+            timeElapsedDisplay.GetComponent<Text>().color = Color.white;
+        timeElapsedDisplay.GetComponent<Text>().text = timeElapsed + "s";
+    }
+
+    //starts the playthrough of the script
+    public void RunScript()
+    {
+        if (scriptPath != null && scriptPath != "")
+        {
+            if (ended)
+                this.GetComponent<Data_Storage>().ReadSetting(this.GetComponent<Data_Storage>().path);
+            Time.timeScale = 1;
+            coroutineRunning = false;
+            ended = false;
+            play = true;
+            timeElapsed = 0;
+            index = 0;
+            if (play)
+                InvokeRepeating("ParseCommand", 0, speed);
+        }
+    }
+
+    //pauses and continues the playthrough
     public void PauseNPlay()
     {
-        play = true;
-        if (play)
-            InvokeRepeating("ParseCommand", 0, speed);
+	    if(scriptPath != "" && scriptPath != null){
+        	if (play)
+         	   Time.timeScale = 0;
+        	else
+        	    Time.timeScale = 1;
+        	play = !play;
+	    }
+        //Debug.Log(play);
     }
 
+    //opens an Explorer window to load a script file
     public void ReadScript()
     {
-        string path = EditorUtility.OpenFilePanel("Choose a Script File", "", "txt");
-        string tmp = File.ReadAllText(path);
-        string[] tempScript = tmp.Split('/');
-        script = new string[tempScript.Length - 1];
-        for(int i = 1; i < tempScript.Length; i++)
+        try {
+            //scriptPath = EditorUtility.OpenFilePanel("Choose a Script File", "", "txt");
+            scriptPath = input.GetComponent<InputField>().text + "(Script).txt";
+            if (scriptPath != ""){
+        	    string tmp = File.ReadAllText(scriptPath);
+        	    string[] tempScript = tmp.Split('/');
+        	    script = new string[tempScript.Length - 1];
+        	    for(int i = 1; i < tempScript.Length; i++)
+        	    {
+            	    script[i - 1] = tempScript[i];
+        	    }
+	        }
+        }
+        catch
         {
-            script[i - 1] = tempScript[i];
+            input.GetComponent<InputField>().text = "";
         }
     }
-    
+
+    //parses the next line of the script by splitting the command into parsed[]
+    //programmer's note: "//-" is to keep track of functioning commands
     void ParseCommand()
     {
-        //parse the commands
-        string[] parsed = script[index].Split(' ');  //ISSUE IS HERE
+        string[] parsed = script[index].Split(' ');
         if (parsed[0] == "speed")
         {
             try
@@ -94,7 +145,7 @@ public class PlayScript : MonoBehaviour {
                 }
                 else
                 {
-                    foreach(Transform child in tmp.transform)
+                    foreach (Transform child in tmp.transform)
                     {
                         if (child.GetComponent<Renderer>())
                         {
@@ -168,6 +219,56 @@ public class PlayScript : MonoBehaviour {
                 ErrorDisp("Error thrown at: (" + script[index] + ").");
             }
         } //-
+        else if (parsed[0] == "addPos")
+        {
+            try
+            {
+                GameObject target = GameObject.Find(parsed[1]);
+                target.transform.Translate(float.Parse(parsed[2]), float.Parse(parsed[3]), float.Parse(parsed[4]));
+            }
+            catch
+            {
+                ErrorDisp("Error thrown at: (" + script[index] + ").");
+            }
+        } //-
+        else if (parsed[0] == "view")
+        {
+            try
+            {
+                if (parsed[1].TrimEnd('\n') == "-1")
+                {
+                    camera.transform.position = cameraPosition;
+                    camera.transform.rotation = Quaternion.Euler(cameraRotation);
+                    camera.GetComponent<Camera>().orthographic = true;
+                }
+                else
+                {
+                    GameObject tmp = GameObject.Find("Camera|" + parsed[1].TrimEnd('\n'));
+                    camera.transform.position = tmp.transform.position;
+                    camera.transform.rotation = tmp.transform.rotation;
+                    camera.transform.rotation = Quaternion.Euler(camera.transform.rotation.eulerAngles.x + 90, camera.transform.rotation.eulerAngles.z, 0);
+                    camera.GetComponent<Camera>().orthographic = false;
+                }
+            }
+            catch
+            {
+                ErrorDisp("Error thrown at: (" + script[index] + ").");
+            }
+        } //-
+        else if (parsed[0] == "animove")
+        {
+            try
+            {
+                GameObject obj = GameObject.Find(parsed[1]);
+                Vector3 dest = new Vector3(float.Parse(parsed[3]), float.Parse(parsed[4]), float.Parse(parsed[5]));
+                float time = float.Parse(parsed[2]);
+                StartCoroutine(MoveOverSeconds(obj, dest, time));
+            }
+            catch
+            {
+                ErrorDisp("Error thrown at: (" + script[index] + ").");
+            }
+        } //-
         else
         {
             Debug.Log(parsed[0] + "not found");
@@ -176,20 +277,42 @@ public class PlayScript : MonoBehaviour {
             index++;
         else
         {
-            play = false;
+            ended = true;
+            if (!coroutineRunning)
+                play = false;
             CancelInvoke("ParseCommand");
         }
     }
     
-
+    //error handling
+    //used in debugging or if something goes wrong in parsing
     void ErrorDisp(string error)
     {
         subtitle.GetComponent<Text>().color = Color.red;
         subtitle.GetComponent<Text>().text = "ERROR! " + error + " PLEASE CHECK YOUR SCRIPT AND RELOAD SCENE!";
     }
 
+    //coroutine for moving an object over time
+    public IEnumerator MoveOverSeconds(GameObject objectToMove, Vector3 end, float seconds)
+    {
+        coroutineRunning = true;
+        float elapsedTime = 0;
+        Vector3 startingPos = objectToMove.transform.position;
+        while (elapsedTime < seconds)
+        {
+            objectToMove.transform.position = Vector3.Lerp(startingPos, end, (elapsedTime / seconds));
+            elapsedTime += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+        }
+        objectToMove.transform.position = end;
+        coroutineRunning = false;
+        if (ended)
+            play = false;
+        //Debug.Log(coroutineRunning + "" + play);
+    }
 
-    /*Conventions:
+
+    /*Commands:
      * /color object red blue green -
      * changes the color of an object
      * 
@@ -202,16 +325,13 @@ public class PlayScript : MonoBehaviour {
      * /rotate object (x y z) -
      * changes rotation of an object
      * 
-     * /anim object name (speed/on/off)
-     * animates a character
-     * 
-     * /animMove object (x y z/point)
-     * moves a character over time to a point
+     * /animMove object speed (x y z) -
+     * moves a character over speed time to x y z
      * 
      * /sub text -
      * displays a subtitle for x seconds
      * 
-     * /view x
+     * /view x -
      * switches view to camera x
      * 
      * /speed x -
@@ -219,5 +339,8 @@ public class PlayScript : MonoBehaviour {
      * 
      * /pause x -
      * pauses the scene
+     * 
+     * /addPos obj x y z -
+     *  translates
      */
 }

@@ -23,6 +23,8 @@ public class Obj_Lister : MonoBehaviour {
 
     public bool list;
 
+    //runs at the start of the program
+    //finds gameobjects and initializes variables
     private void Start()
     {
         if (list)
@@ -42,10 +44,10 @@ public class Obj_Lister : MonoBehaviour {
      * move down by height
      */
 
+    //creates the list of objects based off prefabs in list
     void GenerateList(string search)
     {
         ClearButtons();
-        //posY = Screen.height - 30;
         posY = location.transform.position.y;
         foreach(GameObject i in parts)
         {
@@ -54,7 +56,6 @@ public class Obj_Lister : MonoBehaviour {
                 tmp = Instantiate(button, location.transform, false);
                 tmp.SetActive(true);
                 tmp.transform.SetParent(location.transform);
-                //tmp.transform.position = new Vector3(Screen.width / 2, posY, 0);
                 tmp.transform.position = new Vector3(location.transform.position.x, posY, 0);
                 tmp.GetComponent<Button>().onClick.AddListener(delegate { cont.SpawnObject(i); });
                 tmp.transform.GetChild(0).GetComponent<Text>().text = i.name;
@@ -66,6 +67,8 @@ public class Obj_Lister : MonoBehaviour {
         tmp = null;
     }
 
+    //gets rid of all the buttons
+    //used for search function
     void ClearButtons()
     {
         foreach(GameObject i in buttons)
@@ -76,11 +79,14 @@ public class Obj_Lister : MonoBehaviour {
         buttons = new List<GameObject>();
     }
 
+    //generates a new list using only the input keyword
     public void Search()
     {
         GenerateList(searchBox.GetComponent<InputField>().text);
     }
 
+    //called every frame
+    //handles button scrolling
     private void Update()
     {
         if (buttons != null && buttons.Count != 0)
