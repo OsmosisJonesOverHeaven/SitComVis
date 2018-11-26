@@ -45,8 +45,8 @@ public class Data_Storage : MonoBehaviour {
     //may contain artifacts as was used originally for saving actions too
     public void WriteScript(string title)
     {
-        //try
-        //{
+        try
+        {
             string content = "";
             if (title == "Setting")
                 content = setting;
@@ -60,11 +60,11 @@ public class Data_Storage : MonoBehaviour {
                 w.Write(content);
                 w.Close();
             }
-        //}
-        //catch
-        //{
-            //input.GetComponent<InputField>().text = "";
-        //}
+        }
+        catch
+        {
+            input.GetComponent<InputField>().text = "";
+        }
     }
     
     //writes the actions contained in "actionlist" to a file
@@ -86,6 +86,7 @@ public class Data_Storage : MonoBehaviour {
     //runs WriteScript afterwards to save it
     public void SaveSetting()
     {
+        setting = "";
         foreach (Transform c in roomHolder.transform)
         {
             string[] tmp = c.gameObject.name.Split('|');
@@ -123,8 +124,10 @@ public class Data_Storage : MonoBehaviour {
         try
         {
             ClearRoom();
-            //if (p == "")
-            path = input.GetComponent<InputField>().text + "(Setting).txt";
+            if (p == "")
+                path = input.GetComponent<InputField>().text + "(Setting).txt";
+            else
+                path = p;
             Debug.Log(path);
             //path = EditorUtility.OpenFilePanel("Choose setting file", "", "txt");
             if (path != "")

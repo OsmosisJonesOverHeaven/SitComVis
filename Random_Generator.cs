@@ -92,6 +92,7 @@ public class Random_Generator : MonoBehaviour {
             if (tmp.name.Contains("Camera"))
                 cameras.Add(tmp);
         }
+        this.GetComponent<Data_Storage>().sceneName = "randomScene";
         this.GetComponent<Data_Storage>().SaveSetting();
     }
 

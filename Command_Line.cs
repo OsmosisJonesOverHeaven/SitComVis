@@ -160,7 +160,7 @@ public class Command_Line : MonoBehaviour {
                     z = tmp.transform.position.z;
                 }
                 textBox.GetComponent<Text>().text = "/move " + parsed[1] + " " + x + " " + y + " " + z;
-                AddHistory();
+                fullText += "/move " + parsed[1] + " " + x + " " + y + " " + z + "\n";
             }
             catch
             {
@@ -281,7 +281,7 @@ public class Command_Line : MonoBehaviour {
                     z = tmp.transform.position.z;
                 }
                 textBox.GetComponent<Text>().text = "/animove " + parsed[1] + " " + parsed[2] + " " + x + " " + y + " " + z;
-                fullText += "/animove " + parsed[1] + " " + parsed[2] + " " + x + " " + y + " " + z;
+                fullText += "/animove " + parsed[1] + " " + parsed[2] + " " + x + " " + y + " " + z + "\n";
                 //AddHistory();
             }
             catch
@@ -307,7 +307,7 @@ public class Command_Line : MonoBehaviour {
         {
             try
             {
-                controller.GetComponent<Data_Storage>().ReadSetting("");
+                controller.GetComponent<Data_Storage>().ReadSetting(parsed[1] + "(Setting).txt");
             }
             catch
             {
